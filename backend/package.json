@@ -1,0 +1,30 @@
+{
+  "name": "speed-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rodrigotmuniz/speed-test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/rodrigotmuniz/speed-test/issues"
+  },
+  "homepage": "https://github.com/rodrigotmuniz/speed-test#readme",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.0.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "tailwindcss": "^4.0.6",
+    "ws": "^8.18.0"
+  }
+}
