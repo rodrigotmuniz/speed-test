@@ -57,7 +57,7 @@ wss.on('connection', (ws) => {
 
 // DONWLOAD
 app.get('/download', (req, res) => {
-  const filePath = path.join(process.cwd(), 'public', 'download_test_25MB')
+  const filePath = path.join(process.cwd(), 'public', 'download_test_10MB')
   const CHUNK_SIZE = 512 * 1000
 
   res.setHeader('Content-Type', 'application/octet-stream')

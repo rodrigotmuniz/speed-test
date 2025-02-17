@@ -10,10 +10,10 @@ export function Upload() {
   const [speedData, setSpeedData] = useState([])
 
   const handleUpload = async () => {
-    const payloadSize = 25
+    const payloadSize = 10
     const concorrentRequests = 200
 
-    const data = new Blob(['x'.repeat(payloadSize * 1024 * 1024)])
+    const data = new Blob(['x'.repeat(payloadSize * 1000 * 1000)])
     const formData = new FormData()
     formData.append('file', data)
 

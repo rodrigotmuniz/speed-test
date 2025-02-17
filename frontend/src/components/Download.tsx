@@ -15,7 +15,7 @@ export function Download() {
       cache: 'no-store',
     })
     await response.arrayBuffer()
-    const end = performance.now()
+    const end = performance.now() 
     parallelDownloadsCounter++
 
     const speed = calculateSpeed(payloadSize, parallelDownloadsCounter, end, startTime)

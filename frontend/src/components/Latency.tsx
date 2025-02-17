@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from './Button'
 
 const socket = new WebSocket('ws://localhost:8080')
 let latencies: number[] = []
@@ -7,13 +8,12 @@ export function Latency() {
   const [latency, setLatency] = useState(0)
 
   socket.onopen = () => {
-    const message = 'Hi server!!'
-    socket.send(message) 
+    const message = 'Hi server!'
+    socket.send(message)
   }
 
   socket.onmessage = (event) => {
     const endTime = performance.now()
-    // console.log('length', latencies.length)
 
     if (event.data === 'Hi Client') {
       console.log('Server said Hi')
@@ -43,12 +43,9 @@ export function Latency() {
   }
 
   return (
-    <>
-      {' '}
-      <button className="text-amber-50 bg-gray-800 p-2 rounded-lg hover:cursor-pointer" onClick={sendMessage}>
-        Latency
-      </button>
+    <div className='flex items-center justify-center'>
+      <Button handleClick={sendMessage}>Latency</Button>
       <p className="text-white">{latency.toFixed(2)} ms</p>
-    </>
+    </div>
   )
 }
