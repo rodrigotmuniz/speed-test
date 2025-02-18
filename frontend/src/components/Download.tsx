@@ -1,82 +1,46 @@
-import { useState } from 'react'
-import { Button } from './Button'
-import DownloadSpeedChart from './DownloadSpeedChart'
+import { useEffect, useState } from 'react'
 import { calculateSpeed } from '../utils'
+import DownloadSpeedChart from './DownloadSpeedChart'
+let concurrencyCounter: number = 0
 
-// let downloads: number[] = []
-let parallelDownloadsCounter: number = 0
-
-export function Download() {
-  const [, setDownload] = useState(0)
+export function Download({ ipAddress, downloadSpeed, setDownloadSpeed, payloadSize, concurrentRequests }) {
+  // const [, setDownload] = useState(0)
   const [speedData, setSpeedData] = useState([])
 
   const requestDownload = async (payloadSize: number, startTime: number) => {
-    const response = await fetch('http://localhost:8080/download', {
+    // console.log(`http://${ipAddress}/download`)
+    const response = await fetch(`http://${ipAddress}/download`, {
       cache: 'no-store',
     })
     await response.arrayBuffer()
     const end = performance.now() 
-    parallelDownloadsCounter++
+    concurrencyCounter++
 
-    const speed = calculateSpeed(payloadSize, parallelDownloadsCounter, end, startTime)
-    console.log(speed)
+    const speed = calculateSpeed(payloadSize, concurrencyCounter, end, startTime)
+    // console.log(speed)
 
     const newEntry = { time: new Date().toLocaleTimeString(), speed } as never
 
     setSpeedData((prevData) => [...prevData, newEntry])
   }
 
-  const handleDownload = async () => {
-    const payloadSize = 25
-    const concorrentRequests = 200
-
-    handlerParallel(payloadSize, concorrentRequests)
-    // handlerSequential()
-  }
-
-
-  // const handlerSequential = async () => {
-  //   if (downloads.length < 10) {
-  //     const start = performance.now()
-  //     const response = await fetch('http://localhost:8080/download', {
-  //       cache: 'no-store',
-  //     })
-  //     await response.arrayBuffer()
-  //     const end = performance.now()
-  //     const speed = (25 * 8) / ((end - start) / 1000)
-  //     downloads.push(speed)
-  //     setDownload(() => speed)
-  //     console.log('speed', speed)
-  //     handleDownload()
-  //   } else {
-  //     const avgSpeed = downloads.reduce((prev, curr) => prev + curr, 0) / downloads.length
-  //     setDownload(avgSpeed)
-  //     downloads = []
-  //   }
-  // }
-
-  const handlerParallel = async (payloadSize: number, concorrentRequests: number) => {
+  const handleDownloads = async (payloadSize: number, concurrentRequests: number) => {
     const start = performance.now()
-    await Promise.all(Array.from({ length: concorrentRequests }, () => requestDownload(payloadSize, start)))
+    await Promise.all(Array.from({ length: concurrentRequests }, () => requestDownload(payloadSize, start)))
     const end = performance.now()
 
-    const speed = (payloadSize * concorrentRequests * 8) / ((end - start) / 1000)
-
-    setDownload(speed)
-    parallelDownloadsCounter = 0
+    const speed = (payloadSize * concurrentRequests * 8) / ((end - start) / 1000)
+    // setDownload(speed)
+    setDownloadSpeed(speed)
+    concurrencyCounter = 0
   }
 
-  const handlerCleanChart = () => {
-    setSpeedData([])
-  }
+  useEffect(() => {
+    handleDownloads(payloadSize, concurrentRequests)  
+  }, [])
 
-  return (
-    <div className="mb-10">
-      <DownloadSpeedChart speedData={speedData} />
-      <div className="flex justify-center">
-        <Button handleClick={handlerCleanChart}>Clean Chart</Button>
-        <Button handleClick={handleDownload}>Download</Button>
-      </div>
+  return <div>
+    <DownloadSpeedChart speedData={speedData} />
+    <p className="text-white"><strong>Download Speed:</strong> {downloadSpeed.toFixed(0)} Mbps</p>
     </div>
-  )
 }

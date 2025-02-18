@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
-// import { Button } from './Button'
 
 let latencies: number[] = []
 let socket: WebSocket
 
-export function Latency({ ipAddress, latency, setLatency, speed, label }) {
+export function Ping({ ipAddress, latency, setLatency }) {
+
   useEffect(() => {
     socket = new WebSocket(`ws://${ipAddress}`)
 
@@ -21,10 +21,9 @@ export function Latency({ ipAddress, latency, setLatency, speed, label }) {
         console.log('Server said Hi')
       } else {
         const { clientStartTime } = JSON.parse(event.data)
-        if (speed === 0) {
+        if (latencies.length < 9) {
           const currLatency = (endTime - clientStartTime) / 2
           latencies.push(currLatency)
-          console.log('latencies 2', speed)
           socket.send(JSON.stringify({ clientStartTime: performance.now() }))
         } else {
           setLatency(latencies.reduce((prev, curr) => prev + curr, 0) / latencies.length)
@@ -37,7 +36,9 @@ export function Latency({ ipAddress, latency, setLatency, speed, label }) {
     socket.onerror = (error) => {
       console.error('WebSocket error:', error)
     }
-  }, [ipAddress, speed])
+  }, [ipAddress])
 
-  return <p className="text-white"><strong>{label}:</strong> {latency.toFixed(2)} ms</p>
+  return (
+    <p className="text-white"><strong>Ping:</strong> {latency.toFixed(2)} ms</p>
+  )
 }
