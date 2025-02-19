@@ -11,9 +11,9 @@ export function IpAddress({ setIpAddress, clean }) {
 
   const handleOnStart = () => {
     const tmp = inputValue
-    console.log('handleOnStart', inputValue)
+    // console.log('handleOnStart', inputValue)
     clean()
-    console.log('tmp', tmp)
+    // console.log('tmp', tmp)
     setTimeout(() => {
       setIpAddress(tmp)
     }, 10);
@@ -22,7 +22,9 @@ export function IpAddress({ setIpAddress, clean }) {
     <div className="bg-green-900 my-2 flex items-center border-2 border-solid p-2">
       <label><strong>IP Address:</strong></label>
       <input className="ml-6 flex-1" name="myInput" onKeyUp={handleKeyDown} />
+      56.124.123.37
       <Button handleClick={handleOnStart}>Start</Button>
+      localhost:8080
     </div>
   )
 }

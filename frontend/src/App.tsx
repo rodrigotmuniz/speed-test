@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Download } from './components/Download'
 import { IpAddress } from './components/IpAddress'
-import { Latency } from './components/Latency'
+// import { Latency } from './components/Latency'
 import { Ping } from './components/Ping'
 import { Upload } from './components/Upload'
 
@@ -23,9 +23,9 @@ function App() {
   }
 
   const payloadSize = 10
-  const concurrentRequests = 50
+  const concurrentRequests = 4
 
-  console.log('ipAddress', ipAddress)
+  // console.log('ipAddress', ipAddress, payloadSize, concurrentRequests)  
   return (
     <div className="mx-10  p-2">
       <IpAddress setIpAddress={setIpAddress} clean={clean} />
@@ -40,19 +40,21 @@ function App() {
             ipAddress={ipAddress}
             downloadSpeed={downloadSpeed}
             setDownloadSpeed={setDownloadSpeed}
-            payloadSize={payloadSize}
-            concurrentRequests={concurrentRequests}
+            latency={downloadLatency}
+            setLatency={setDownloadLatency}
+            // payloadSize={payloadSize}
+            // concurrentRequests={concurrentRequests}
           />
-          <Latency
+          {/* <Latency
             ipAddress={ipAddress}
             latency={downloadLatency}
             setLatency={setDownloadLatency}
             speed={downloadSpeed}
             label="Download Latency"
-          />
+          /> */}
         </div>
       )}
-      {downloadLatency !== 0 && (
+      {/* {downloadLatency !== 0 && (
         <div className="p-2 my-2 border-2 border-solid">
           <Upload
             ipAddress={ipAddress}
@@ -63,7 +65,7 @@ function App() {
           />
           <Latency ipAddress={ipAddress} latency={uploadLatency} setLatency={setUploadLatency} speed={uploadSpeed} label="Upload Latency" />
         </div>
-      )}
+      )} */}
     </div>
   )
 }

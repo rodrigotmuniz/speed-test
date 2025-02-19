@@ -9,8 +9,6 @@ export function Ping({ ipAddress, latency, setLatency }) {
     socket = new WebSocket(`ws://${ipAddress}`)
 
     socket.onopen = () => {
-      // const message = 'Hi server!'
-      // socket.send(message)
       socket.send(JSON.stringify({ clientStartTime: performance.now() }))
     }
 
@@ -26,8 +24,9 @@ export function Ping({ ipAddress, latency, setLatency }) {
           latencies.push(currLatency)
           socket.send(JSON.stringify({ clientStartTime: performance.now() }))
         } else {
+          console.log('else', socket.readyState)
           setLatency(latencies.reduce((prev, curr) => prev + curr, 0) / latencies.length)
-          console.log('length', latencies.length)
+          socket.close()
           latencies = []
         }
       }
