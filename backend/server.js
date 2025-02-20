@@ -1,8 +1,7 @@
-// Network Speed Test Server using WebSockets and WebRTC
 import 'dotenv/config'
 import cors from 'cors'
 import express, { json } from 'express'
-import http from 'http'
+import http from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
 import { WebSocketServer } from 'ws'
@@ -50,6 +49,20 @@ wss.on('connection', (ws) => {
 })
 
 // DONWLOAD
+app.get('/download', (req, res) => {
+  const fileSize = 25
+  const filePath = path.join(
+    process.cwd(),
+    'public',
+    `download_test_${fileSize}MB`
+  )
+
+  res.setHeader('Content-Type', 'application/octet-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  const readStream = fs.createReadStream(filePath)
+  readStream.pipe(res)
+})
+
 app.get('/download/:fileSize', (req, res) => {
   const { fileSize } = req.params
   const filePath = path.join(
@@ -66,6 +79,7 @@ app.get('/download/:fileSize', (req, res) => {
   })
   readStream.pipe(res)
 })
+
 
 // CREATING FILE
 app.post('/file', (req, res) => {

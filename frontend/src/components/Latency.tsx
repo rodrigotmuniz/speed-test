@@ -1,16 +1,27 @@
-import { useEffect } from 'react'
-// import { Button } from './Button'
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useState } from 'react'
+
 
 let latencies: number[] = []
 let socket: WebSocket
 
-export function Latency({ ipAddress, latency, setLatency, speed, label }) {
+interface LatencyProps {
+  ipAddress: string | null
+  label: string
+  open: boolean
+  onCompleted: (status: boolean) => void
+}
+
+export function Latency({ ipAddress, label, open, onCompleted }: LatencyProps) {
+  const [latency, setLatency] = useState(0)
+
   useEffect(() => {
     if (socket?.readyState !== 1) {
       socket = new WebSocket(`ws://${ipAddress}`)
     }
-
+    
     socket.onopen = () => {
+      latencies = []
       socket.send(JSON.stringify({ clientStartTime: performance.now() }))
     }
 
@@ -18,21 +29,21 @@ export function Latency({ ipAddress, latency, setLatency, speed, label }) {
       const endTime = performance.now()
 
       const { clientStartTime } = JSON.parse(event.data)
-      if (speed === 0) {
+      if (open) {
         const currLatency = (endTime - clientStartTime) / 2
         latencies.push(currLatency)
         socket.send(JSON.stringify({ clientStartTime: performance.now() }))
       } else {
-        setLatency(latencies.reduce((prev, curr) => prev + curr, 0) / latencies.length)
-        latencies = []
         socket.close()
+        onCompleted(true)
       }
+      setLatency(latencies.reduce((prev, curr) => prev + curr, 0) / latencies.length)
     }
 
     socket.onerror = (error) => {
       console.error('WebSocket error:', error)
     }
-  }, [ipAddress, speed])
+  }, [ipAddress, open])
 
   return (
     <p className="text-white">

@@ -1,43 +1,17 @@
-import { useEffect } from 'react'
+import { useState } from 'react'
+import { Latency } from './Latency'
 
-let latencies: number[] = []
-let socket: WebSocket
+interface PingProps {
+  ipAddress: string;
+  onPingCompleted: () => void;
+}
 
-export function Ping({ ipAddress, latency, setLatency }) {
+export function Ping({ ipAddress, onPingCompleted }: PingProps) {
+  const [openSocket, setOpenSocket] = useState(true)
 
-  useEffect(() => {
-    socket = new WebSocket(`ws://${ipAddress}`)
+  setTimeout(() => {
+    setOpenSocket(false)
+  }, 2000)
 
-    socket.onopen = () => {
-      socket.send(JSON.stringify({ clientStartTime: performance.now() }))
-    }
-
-    socket.onmessage = (event) => {
-      const endTime = performance.now()
-
-      if (event.data === 'Hi Client') {
-        console.log('Server said Hi')
-      } else {
-        const { clientStartTime } = JSON.parse(event.data)
-        if (latencies.length < 9) {
-          const currLatency = (endTime - clientStartTime) / 2
-          latencies.push(currLatency)
-          socket.send(JSON.stringify({ clientStartTime: performance.now() }))
-        } else {
-          console.log('else', socket.readyState)
-          setLatency(latencies.reduce((prev, curr) => prev + curr, 0) / latencies.length)
-          socket.close()
-          latencies = []
-        }
-      }
-    }
-
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error)
-    }
-  }, [ipAddress])
-
-  return (
-    <p className="text-white"><strong>Ping:</strong> {latency.toFixed(2)} ms</p>
-  )
+  return <Latency ipAddress={ipAddress} label="Download Latency" open={openSocket} onCompleted={onPingCompleted} />
 }

@@ -1,65 +1,79 @@
 import { useEffect, useState } from 'react'
-import { calculateSpeed } from '../utils'
-import DownloadSpeedChart from './DownloadSpeedChart'
 import { Latency } from './Latency'
+import SpeedChart from './SpeedChart'
 
-const BASE_FILE_SIZE_MB = 0.5 // Start small, adjust dynamically
-const BASE_CONCURRENT_REQS = 4
-const TIMEOUT_SEC = 20 // Maximum time permitted per group of request in seconds
-const MAX_TIME_SPEND_SEC = 10 // Maximum time desired per group of request in seconds
-const SCALE_FACTOR = 2 // Scale factor for file size adjustments
+const DOWNLOAD_DURATION_MS = 15000
+const MAX_CONCURRENT_REQUESTS = 4
 
-export function Download({ ipAddress, downloadSpeed, setDownloadSpeed, latency, setLatency }) {
+interface DownloadProps {
+  ipAddress: string | null
+  onDownloadTestCompleted: () => void
+}
+
+export function Download({ ipAddress, onDownloadTestCompleted }: DownloadProps) {
   const [speedData, setSpeedData] = useState([])
-  let speed = 0
-  let concurrencyCounter: number = 0
-  let fileSizeMb = BASE_FILE_SIZE_MB
-  let concurrentRequests = BASE_CONCURRENT_REQS
-  let attempts = 0
+  const [downloadSpeed, setDownloadSpeed] = useState(0)
+  const [openSocket, setOpenSocket] = useState(true)
 
-  const requestDownload = async (fileSizeMb: number, startTime: number, controller) => {
-    const response = await fetch(`http://${ipAddress}/download/${fileSizeMb}`, {
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-    await response.arrayBuffer()
-    const endTime = performance.now()
-    concurrencyCounter++
+  let totalBytes = 0
+  let startTime: number
 
-    speed = calculateSpeed(fileSizeMb, concurrencyCounter, endTime, startTime)
-
-    const newEntry = { time: new Date().toLocaleTimeString(), speed } as never
-    setSpeedData((prevData) => [...prevData, newEntry])
+  function calculateSpeed(endtTime: number) {
+    const timeTakenSeconds = (endtTime - startTime) / 1000
+    return (totalBytes * 8) / 1_000_000 / timeTakenSeconds
   }
 
-  const handleDownloads = async () => {
-    while (attempts < 7) {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_SEC * 1000)
-      const startTime = performance.now()
-      try {
-        await Promise.all(Array.from({ length: concurrentRequests }, () => requestDownload(fileSizeMb, startTime, controller)))
-      } catch (error) {
-        console.warn('Download test interrupted or timed out.', error)
-        break
+  async function downloadChunk(controller: AbortController) {
+    try {
+      const response = await fetch(`http://${ipAddress}/download`, { signal: controller.signal })
+      const reader = response.body!.getReader()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const endtTime = performance.now()
+        totalBytes += value.length
+
+        const downloadSpeed = calculateSpeed(endtTime)
+        setDownloadSpeed(downloadSpeed)
+
+        const newEntry = { time: new Date().toLocaleTimeString(), speed: +downloadSpeed.toFixed(2) } as never
+        setSpeedData((prevData) => [...prevData, newEntry])
       }
-      const endTime = performance.now()
-
-      clearTimeout(timeoutId)
-      concurrencyCounter = 0
-
-      const timeTakenSeconds = (endTime - startTime) / 1000
-      if (timeTakenSeconds < MAX_TIME_SPEND_SEC) {
-        fileSizeMb *= SCALE_FACTOR
-        const concurrentFactor = (MAX_TIME_SPEND_SEC - timeTakenSeconds) / MAX_TIME_SPEND_SEC
-        concurrentRequests *= (1 + concurrentFactor)
-        console.log('concurrentRequests', concurrentRequests)
-        attempts++
-      } else {
-        break
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Download error:', error)
       }
     }
-    setDownloadSpeed(speed)
+  }
+
+  async function startDownload(controller: AbortController) {
+    if (controller.signal.aborted) return
+    downloadChunk(controller).finally(() => {
+      if (!controller.signal.aborted) {
+        startDownload(controller)
+      }
+    })
+  }
+
+  async function handleDownloads() {
+    setDownloadSpeed(0)
+
+    const controller = new AbortController()
+    setTimeout(() => {
+      controller.abort()
+      setOpenSocket(false)
+      // setTimeout(() => {
+      //   onDownloadTestCompleted(true)
+      // }, 10)
+    }, DOWNLOAD_DURATION_MS)
+
+    startTime = performance.now()
+    setOpenSocket(true)
+    for (let i = 0; i < MAX_CONCURRENT_REQUESTS; i++) {
+      startDownload(controller)
+    }
   }
 
   useEffect(() => {
@@ -68,11 +82,11 @@ export function Download({ ipAddress, downloadSpeed, setDownloadSpeed, latency, 
 
   return (
     <div>
-      <DownloadSpeedChart speedData={speedData} />
+      <SpeedChart speedData={speedData} />
       <p className="text-white">
         <strong>Download Speed:</strong> {downloadSpeed?.toFixed(0)} Mbps
       </p>
-      <Latency ipAddress={ipAddress} latency={latency} setLatency={setLatency} speed={downloadSpeed} label="Download Latency" />
+      <Latency ipAddress={ipAddress} label="Download Latency" open={openSocket} onCompleted={onDownloadTestCompleted} />
     </div>
   )
 }
