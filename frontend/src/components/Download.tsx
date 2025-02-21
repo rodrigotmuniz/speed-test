@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Latency } from './Latency'
-import SpeedChart from './SpeedChart'
+import { SpeedChartProps } from './SpeedChart'
+import { SpeedTest } from './SpeedTest'
 
-const DOWNLOAD_DURATION_MS = 15000
-const MAX_CONCURRENT_REQUESTS = 4
+const TEST_DURATION_MS = import.meta.env.VITE_TEST_DURATION_MS
+const MAX_CONCURRENT_REQUESTS = import.meta.env.VITE_MAX_CONCURRENT_REQUESTS
 
 interface DownloadProps {
   ipAddress: string | null
@@ -11,7 +11,7 @@ interface DownloadProps {
 }
 
 export function Download({ ipAddress, onDownloadTestCompleted }: DownloadProps) {
-  const [speedData, setSpeedData] = useState([])
+  const [speedData, setSpeedData] = useState<SpeedChartProps['speedData']>([])
   const [downloadSpeed, setDownloadSpeed] = useState(0)
   const [openSocket, setOpenSocket] = useState(true)
 
@@ -38,7 +38,7 @@ export function Download({ ipAddress, onDownloadTestCompleted }: DownloadProps) 
         const downloadSpeed = calculateSpeed(endtTime)
         setDownloadSpeed(downloadSpeed)
 
-        const newEntry = { time: new Date().toLocaleTimeString(), speed: +downloadSpeed.toFixed(2) } as never
+        const newEntry = { time: new Date().toLocaleTimeString(), speed: +downloadSpeed.toFixed(2) }
         setSpeedData((prevData) => [...prevData, newEntry])
       }
     } catch (error) {
@@ -64,10 +64,7 @@ export function Download({ ipAddress, onDownloadTestCompleted }: DownloadProps) 
     setTimeout(() => {
       controller.abort()
       setOpenSocket(false)
-      // setTimeout(() => {
-      //   onDownloadTestCompleted(true)
-      // }, 10)
-    }, DOWNLOAD_DURATION_MS)
+    }, TEST_DURATION_MS)
 
     startTime = performance.now()
     setOpenSocket(true)
@@ -81,12 +78,13 @@ export function Download({ ipAddress, onDownloadTestCompleted }: DownloadProps) 
   }, [])
 
   return (
-    <div>
-      <SpeedChart speedData={speedData} />
-      <p className="text-white">
-        <strong>Download Speed:</strong> {downloadSpeed?.toFixed(0)} Mbps
-      </p>
-      <Latency ipAddress={ipAddress} label="Download Latency" open={openSocket} onCompleted={onDownloadTestCompleted} />
-    </div>
+    <SpeedTest
+      ipAddress={ipAddress}
+      name="Download"
+      onCompleted={onDownloadTestCompleted}
+      openSocket={openSocket}
+      speed={downloadSpeed}
+      speedData={speedData}
+    />
   )
 }

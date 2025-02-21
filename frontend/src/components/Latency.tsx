@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react'
 
-
 let latencies: number[] = []
 let socket: WebSocket
 
@@ -16,8 +15,8 @@ export function Latency({ ipAddress, label, open, onCompleted }: LatencyProps) {
   const [latency, setLatency] = useState(0)
 
   useEffect(() => {
-    if (socket?.readyState !== 1) {
-      socket = new WebSocket(`ws://${ipAddress}`)
+    if (open && socket?.readyState !== 1) {
+      socket = new WebSocket(`ws://${ipAddress}/ws`)
     }
     
     socket.onopen = () => {

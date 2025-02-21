@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Latency } from './Latency'
 
+const PING_DURATION_MS = import.meta.env.VITE_PING_DURATION_MS
+
 interface PingProps {
-  ipAddress: string;
-  onPingCompleted: () => void;
+  ipAddress: string | null
+  onPingCompleted: () => void
 }
 
 export function Ping({ ipAddress, onPingCompleted }: PingProps) {
@@ -11,7 +13,7 @@ export function Ping({ ipAddress, onPingCompleted }: PingProps) {
 
   setTimeout(() => {
     setOpenSocket(false)
-  }, 2000)
+  }, PING_DURATION_MS)
 
-  return <Latency ipAddress={ipAddress} label="Download Latency" open={openSocket} onCompleted={onPingCompleted} />
+  return <Latency ipAddress={ipAddress} label="Ping Latency" open={openSocket} onCompleted={onPingCompleted} />
 }

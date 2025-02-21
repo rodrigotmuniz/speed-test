@@ -1,4 +1,5 @@
 import { SetStateAction, useState } from 'react'
+import { Card } from './components/Card'
 import { Download } from './components/Download'
 import { IpAddress } from './components/IpAddress'
 import { Ping } from './components/Ping'
@@ -26,22 +27,18 @@ function App() {
   return (
     <div className="mx-10  p-2">
       <IpAddress onClean={handleClean} onIpAddressChange={handleIpAddress} />
-      {ipAddress && (
-        <div className="p-2 my-2 border-2 border-solid">
-          <Ping ipAddress={ipAddress} onPingCompleted={handlePingCompleted} />
-          {/* <Latency ipAddress={ipAddress} label="Ping" open={true} onCompleted={setIsPingCompleted} /> */}
-        </div>
-      )}
-      {isPingCompleted && (
-        <div className="p-2 my-2 border-2 border-solid">
-          <Download ipAddress={ipAddress} onDownloadTestCompleted={handleDownloadTestCompleted} />
-        </div>
-      )}
-      {isDownloadTestCompleted  && (
-        <div className="p-2 my-2 border-2 border-solid">
-          <Upload ipAddress={ipAddress} onUploadTestCompleted={handleUploadTestCompleted} />
-        </div>
-      )}
+
+      <Card show={!!ipAddress}>
+        <Ping ipAddress={ipAddress} onPingCompleted={handlePingCompleted} />
+      </Card>
+
+      <Card show={isPingCompleted}>
+        <Download ipAddress={ipAddress} onDownloadTestCompleted={handleDownloadTestCompleted} />
+      </Card>
+
+      <Card show={isDownloadTestCompleted}>
+        <Upload ipAddress={ipAddress} onUploadTestCompleted={handleUploadTestCompleted} />
+      </Card>
     </div>
   )
 }

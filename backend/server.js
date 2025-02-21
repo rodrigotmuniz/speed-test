@@ -19,7 +19,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 // LATENCY
 const server = http.createServer(app)
-const wss = new WebSocketServer({ server })
+const wss = new WebSocketServer({ server, path: '/ws'})
 wss.on('connection', (ws) => {
   console.log('Client connected')
 

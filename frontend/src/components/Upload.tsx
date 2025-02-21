@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Latency } from './Latency'
-import SpeedChart, { SpeedChartProps } from './SpeedChart'
+import { SpeedChartProps } from './SpeedChart'
+import { SpeedTest } from './SpeedTest'
 
-const UPLOAD_DURATION_MS = 15000
-const MAX_CONCURRENT_REQUESTS = 4
-const FILE_SIZE_MB = 25
+const TEST_DURATION_MS = import.meta.env.VITE_TEST_DURATION_MS
+const MAX_CONCURRENT_REQUESTS = import.meta.env.VITE_MAX_CONCURRENT_REQUESTS
+const FILE_SIZE_MB = import.meta.env.VITE_FILE_SIZE_MB
 
 const payload = new Blob([new ArrayBuffer(FILE_SIZE_MB * 1_000_000)])
 const uploadCache = new Map()
@@ -87,7 +87,7 @@ export function Upload({ ipAddress, onUploadTestCompleted }: UploadProps) {
       setOpenSocket(false)
       uploadCache.clear()
       requestId = 0
-    }, UPLOAD_DURATION_MS)
+    }, TEST_DURATION_MS)
 
     startTime = performance.now()
     setOpenSocket(true)
@@ -102,12 +102,13 @@ export function Upload({ ipAddress, onUploadTestCompleted }: UploadProps) {
   }, [])
 
   return (
-    <div>
-      <SpeedChart speedData={speedData} />
-      <p className="text-white">
-        <strong>Upload Speed:</strong> {uploadSpeed?.toFixed(0)} Mbps
-      </p>
-      <Latency ipAddress={ipAddress} label="Upload Latency" open={openSocket} onCompleted={onUploadTestCompleted} />
-    </div>
+    <SpeedTest
+      ipAddress={ipAddress}
+      name="Upload"
+      onCompleted={onUploadTestCompleted}
+      openSocket={openSocket}
+      speed={uploadSpeed}
+      speedData={speedData}
+    />
   )
 }
