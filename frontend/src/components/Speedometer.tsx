@@ -6,7 +6,7 @@ const Speedometer = ({ speed }: { speed: number }) => {
 
   useEffect(() => {
     const width = 300
-    const height = 200
+    const height = 150
     const radius = Math.min(width, height) / 2
 
     const svg = d3

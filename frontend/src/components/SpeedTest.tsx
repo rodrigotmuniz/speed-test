@@ -24,7 +24,7 @@ export function SpeedTest({ speed, name, ipAddress, openSocket, onCompleted, spe
             segments={10}
             endColor="green"
             currentValueText={`${name} Speed: ${speed?.toFixed(0)} Mbps`}
-            height={200}
+            height={180}
             width={300}
             needleTransition={Transition.easeElastic}
           />
